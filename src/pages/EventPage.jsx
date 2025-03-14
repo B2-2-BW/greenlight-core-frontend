@@ -3,7 +3,9 @@ import { useState, useEffect, useCallback } from 'react';
 import Upcoming from '../components/Upcoming.jsx';
 import SplashScreen from '../components/SplashScreen.jsx';
 import ApiClient from '../client/api.js';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
+
+const DEFAULT_POLLING_INTERVAL = 5000;
 
 function EventPage() {
   const [loading, setLoading] = useState(true);
@@ -12,6 +14,8 @@ function EventPage() {
   const { eventName } = useParams();
   const [event, setEvent] = useState(null);
   const [customer, setCustomer] = useState(null);
+  const [pollingFailureCount, setPollingFailureCount] = useState(0);
+  const navigate = useNavigate();
 
   const renderSwitch = () => {
     switch (eventStatus) {
@@ -28,20 +32,19 @@ function EventPage() {
     }
   };
 
+  // 페이지 로드 시 eventStatus 세팅
   useEffect(() => {
-    // 페이지 로드 시 이벤트 상태 확인
     const fetchEvent = async () => {
       try {
         // API 호출
         const eventResponse = await ApiClient.get(`/events/${eventName}`);
         const eventData = eventResponse?.data;
         setEvent(eventData);
-
         if (
           eventData?.eventStartTime == null ||
           eventData?.eventEndTime == null
         ) {
-          setEventStatus('ERROR');
+          setEventStatus('UNKNOWN');
           return;
         }
         const now = Date.now();
@@ -52,26 +55,7 @@ function EventPage() {
         } else if (now > eventEndTime) {
           setEventStatus('ENDED');
         } else {
-          const customerResponse = await ApiClient.post('/customers', {
-            eventName,
-          });
-          const customerData = customerResponse?.data;
-          console.log('customerData', customerData);
-          setCustomer(customerData);
           setEventStatus('OPEN');
-          const intervalId = setInterval(async () => {
-            const customerStatusResponse = await ApiClient.get(
-              `/customers/${customerData.customerId}/status`
-            );
-            const customerStatusData = customerStatusResponse?.data;
-            console.log(customerStatusData);
-            setCustomer(customerStatusData);
-          }, 3000);
-          return () => {
-            // Clear interval using intervalId
-            // This function run when component unmount
-            clearInterval(intervalId);
-          };
         }
       } catch (error) {
         console.error('API 호출 실패:', error);
@@ -80,9 +64,44 @@ function EventPage() {
         setLoading(false);
       }
     };
-
     fetchEvent();
-  }, []);
+  }, [eventName]);
+
+  // eventStatus 로딩 완료 시 customer set
+  useEffect(() => {
+    const createCustomer = async () => {
+      const customerResponse = await ApiClient.post('/customers', {
+        eventName,
+      });
+      if (customerResponse?.data) {
+        setCustomer(customerResponse.data);
+      }
+    };
+    if (eventStatus === 'OPEN') {
+      createCustomer();
+    }
+  }, [eventStatus]);
+
+  useEffect(() => {
+    if (event == null || customer == null) {
+      return;
+    }
+    if (customer.waitingPhase === 'READY') {
+      window.location.replace(event.eventUrl);
+    }
+    console.log(customer);
+    const intervalId = setInterval(async () => {
+      const customerStatusResponse = await ApiClient.get(
+        `/customers/${customer.customerId}/status`
+      );
+      const customerStatusData = customerStatusResponse?.data;
+      setCustomer(customerStatusData);
+    }, DEFAULT_POLLING_INTERVAL);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [event, customer]);
 
   if (loading) {
     return <SplashScreen />;
