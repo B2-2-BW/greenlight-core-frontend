@@ -1,6 +1,4 @@
 import Spinner from './Spinner.jsx';
-import { CountUp } from 'countup.js';
-import { useEffect, useRef } from 'react';
 import PositionPanel from './PositionPanel.jsx';
 
 function Waiting({ customer }) {
@@ -13,7 +11,12 @@ function Waiting({ customer }) {
       <h1 className="text-sm font-bold mt-5">
         사용자가 많아 접속 대기중이에요
       </h1>
-      <PositionPanel customer={customer} />
+      <PositionPanel
+        position={customer?.position}
+        estimatedWaitTime={customer?.estimatedWaitTime}
+        isReady={customer?.waitingPhase === 'READY'}
+      />
+
       <div className="text-[10px] text-neutral-500 mb-5">
         <p>잠시만 기다리시면 순서에 따라 자동 접속됩니다.</p>
         <p>새로고침하면 대기시간이 길어질 수 있어요</p>

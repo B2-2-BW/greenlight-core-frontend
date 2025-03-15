@@ -1,11 +1,11 @@
 import Waiting from '../components/Waiting.jsx';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Upcoming from '../components/Upcoming.jsx';
 import SplashScreen from '../components/SplashScreen.jsx';
 import ApiClient from '../client/api.js';
-import { useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 
-const DEFAULT_POLLING_INTERVAL = 5000;
+const DEFAULT_POLLING_INTERVAL = 1000;
 
 function EventPage() {
   const [loading, setLoading] = useState(true);
@@ -15,7 +15,6 @@ function EventPage() {
   const [event, setEvent] = useState(null);
   const [customer, setCustomer] = useState(null);
   const [pollingFailureCount, setPollingFailureCount] = useState(0);
-  const navigate = useNavigate();
 
   const renderSwitch = () => {
     switch (eventStatus) {
@@ -31,7 +30,9 @@ function EventPage() {
         );
     }
   };
-
+  useEffect(() => {
+    document.title = '대시보드 | MyApp';
+  }, []);
   // 페이지 로드 시 eventStatus 세팅
   useEffect(() => {
     const fetchEvent = async () => {
@@ -86,15 +87,17 @@ function EventPage() {
     if (event == null || customer == null) {
       return;
     }
-    if (customer.waitingPhase === 'READY') {
-      window.location.replace(event.eventUrl);
-    }
-    console.log(customer);
     const intervalId = setInterval(async () => {
       const customerStatusResponse = await ApiClient.get(
         `/customers/${customer.customerId}/status`
       );
       const customerStatusData = customerStatusResponse?.data;
+
+      if (customerStatusData?.waitingPhase === 'READY') {
+        location.href = event.eventUrl;
+        return;
+      }
+
       setCustomer(customerStatusData);
     }, DEFAULT_POLLING_INTERVAL);
 

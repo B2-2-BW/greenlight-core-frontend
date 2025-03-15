@@ -88,7 +88,7 @@ function Upcoming({ event }) {
   return (
     <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-5 select-none">
       <div className="h-10 mb-3">
-        <img src="/public/heendy.svg" alt="heendy" style={{ width: '36px' }} />
+        <img src="/heendy.svg" alt="heendy" style={{ width: '36px' }} />
       </div>
       <h1 className="text-sm font-bold mt-5">이벤트 오픈 전입니다</h1>
       <div
