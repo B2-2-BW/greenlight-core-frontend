@@ -31,7 +31,7 @@ function EventPage() {
     }
   };
   useEffect(() => {
-    document.title = '대시보드 | MyApp';
+    document.title = '이벤트 | Greenlight';
   }, []);
   // 페이지 로드 시 eventStatus 세팅
   useEffect(() => {
