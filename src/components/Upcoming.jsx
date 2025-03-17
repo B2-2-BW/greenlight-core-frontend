@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import confetti from 'canvas-confetti';
 
-function Upcoming({ event }) {
+function Upcoming({ event, reloadEventStatus }) {
   const eventStartTime = useMemo(
     () => Date.parse(event?.eventStartTime),
     [event]
@@ -15,12 +15,11 @@ function Upcoming({ event }) {
   useEffect(() => {
     const interval = setInterval(() => {
       const diff = calculateTimeLeft();
-      console.log(diff);
       if (diff <= 10 && !shouldGetReady) {
         setShouldGetReady(true);
       }
       if (diff <= 0) {
-        window.location.reload();
+        reloadEventStatus(event?.eventStartTime, event?.eventEndTime);
       }
       setTimeLeft(diff);
     }, 1000);
@@ -39,24 +38,22 @@ function Upcoming({ event }) {
     return `${hours}시간 ${minutes}분 ${seconds}초`;
   };
 
-  const tryWaiting = (event) => {
+  const tryWaiting = (mouseEvent) => {
     if (shouldGetReady) {
-      fanfare(event);
+      fanfare(mouseEvent);
     }
     if (calculateTimeLeft() <= 0) {
-      window.location.reload();
+      reloadEventStatus(event?.eventStartTime, event?.eventEndTime);
     }
   };
 
-  const getClickOrigin = (event) => {
-    const origin = {
-      x: event.clientX / window.innerWidth,
-      y: event.clientY / window.innerHeight,
+  const getClickOrigin = (mouseEvent) => {
+    return {
+      x: mouseEvent.clientX / window.innerWidth,
+      y: mouseEvent.clientY / window.innerHeight,
     };
-    console.log(origin);
-    return origin;
   };
-  const fanfare = (event) => {
+  const fanfare = (mouseEvent) => {
     const defaults = {
       spread: 360,
       ticks: 40,
@@ -64,7 +61,7 @@ function Upcoming({ event }) {
       decay: 0.9,
       startVelocity: 5,
       colors: ['FFE400', 'FFBD00', 'E89400', 'FFCA6C', 'FDFFB8'],
-      origin: getClickOrigin(event),
+      origin: getClickOrigin(mouseEvent),
     };
 
     function shoot() {
@@ -86,34 +83,37 @@ function Upcoming({ event }) {
     shoot();
   };
   return (
-    <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-5 select-none">
-      <div className="h-10 mb-3">
-        <img src="/heendy.svg" alt="heendy" style={{ width: '36px' }} />
+    <div className="m-auto w-[75%] max-w-[320px] flex flex-col items-center">
+      <div className="mb-3 mt-[-108px]">
+        <img src="/heendy.svg" alt="heendy" style={{ width: '48px' }} />
       </div>
-      <h1 className="text-sm font-bold mt-5">이벤트 오픈 전입니다</h1>
+      <h1 className="text-2xl font-bold mt-5">이벤트 오픈 전입니다</h1>
       <div
         onClick={tryWaiting}
-        className="bg-[#F5E7F4] hover:bg-[#f3e0f2] transition-colors py-2 my-4 text-sm text-center rounded w-full max-w-[200px] cursor-pointer "
+        className="bg-[#F5E7F4] hover:bg-[#f3e0f2] transition-colors py-2 my-4 text-sm text-center rounded w-full cursor-pointer select-none"
       >
         <div className="mb-1 flex flex-col">
           {shouldGetReady ? (
-            <span className="text-xs text-neutral-600 mb-1">
+            <span className="text-lg text-neutral-600 mb-1">
               곧 입장합니다. 마구 클릭해주세요!
             </span>
           ) : (
-            <span className="text-xs text-neutral-600 mb-1">
+            <span className="text-lg text-neutral-600 mb-1">
               이벤트 시작까지
             </span>
           )}
-          <span className="text-[#375A4E] font-semibold">
+          <span className="text-xl text-[#375A4E] font-semibold">
             {formatTime(timeLeft)}
           </span>
         </div>
       </div>
-      <button className="rounded-full border-[1px] border-neutral-200 px-2 py-2 text-[10px]">
-        이전으로 돌아가기
-      </button>
+      <section className="flex flex-col items-center">
+        <button className="rounded-full text-neutral-700 border-[1px] border-neutral-200 px-2 py-2">
+          이전으로 돌아가기
+        </button>
+      </section>
     </div>
   );
 }
+
 export default Upcoming;

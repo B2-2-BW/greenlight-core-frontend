@@ -5,7 +5,7 @@ import SplashScreen from '../components/SplashScreen.jsx';
 import ApiClient from '../client/api.js';
 import { useParams } from 'react-router';
 
-const DEFAULT_POLLING_INTERVAL = 1000;
+const DEFAULT_POLLING_INTERVAL = 3000;
 
 function EventPage() {
   const [loading, setLoading] = useState(true);
@@ -16,10 +16,25 @@ function EventPage() {
   const [customer, setCustomer] = useState(null);
   const [pollingFailureCount, setPollingFailureCount] = useState(0);
 
+  useEffect(() => {
+    const setVh = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    // 초기 실행
+    setVh();
+    window.addEventListener('resize', setVh);
+
+    return () => window.removeEventListener('resize', setVh);
+  }, []);
+
   const renderSwitch = () => {
     switch (eventStatus) {
       case 'UPCOMING':
-        return <Upcoming event={event} />;
+        return (
+          <Upcoming event={event} reloadEventStatus={setEventStatusFromDate} />
+        );
       case 'OPEN':
         return <Waiting customer={customer} />;
       default:
@@ -33,6 +48,7 @@ function EventPage() {
   useEffect(() => {
     document.title = '이벤트 | Greenlight';
   }, []);
+
   // 페이지 로드 시 eventStatus 세팅
   useEffect(() => {
     const fetchEvent = async () => {
@@ -48,16 +64,10 @@ function EventPage() {
           setEventStatus('UNKNOWN');
           return;
         }
-        const now = Date.now();
-        const eventStartTime = Date.parse(eventData.eventStartTime);
-        const eventEndTime = Date.parse(eventData.eventEndTime);
-        if (now < eventStartTime) {
-          setEventStatus('UPCOMING');
-        } else if (now > eventEndTime) {
-          setEventStatus('ENDED');
-        } else {
-          setEventStatus('OPEN');
-        }
+        setEventStatusFromDate(
+          eventData.eventStartTime,
+          eventData.eventEndTime
+        );
       } catch (error) {
         console.error('API 호출 실패:', error);
         setEventStatus('ERROR');
@@ -106,14 +116,25 @@ function EventPage() {
     };
   }, [event, customer]);
 
+  const setEventStatusFromDate = (startStr, endStr) => {
+    const now = Date.now();
+    if (now < new Date(startStr)) {
+      setEventStatus('UPCOMING');
+    } else if (now > new Date(endStr)) {
+      setEventStatus('ENDED');
+    } else {
+      setEventStatus('OPEN');
+    }
+  };
+
   if (loading) {
     return <SplashScreen />;
   }
 
   return (
     <>
-      <div className="w-full h-screen overflow-hidden bg-gray-100 font-sans">
-        <div className="w-full h-full relative bg-white">{renderSwitch()}</div>
+      <div className="flex items-center justify-center h-dvh">
+        {renderSwitch()}
       </div>
     </>
   );

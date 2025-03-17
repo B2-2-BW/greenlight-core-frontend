@@ -37,23 +37,23 @@ function PositionPanel({ position, estimatedWaitTime, isReady }) {
     return `약 ${minutes}분 ${seconds}초`;
   };
   return (
-    <div className="bg-[#F5E7F4] py-2 my-4 text-sm text-center rounded w-[200px] h-[60px]">
+    <div className="w-full bg-[#F5E7F4] py-2 my-4 text-xl text-center rounded">
       {isReady ? (
         <div className="h-full flex flex-col justify-center items-center">
           <span className="text-[#375A4E] font-semibold">곧 입장합니다.</span>
-          <span className="text-default-400 text-xs">준비해주세요!</span>
+          <span className="text-default-400 text-lg">준비해주세요!</span>
         </div>
       ) : (
         <>
           <div className="mb-1">
-            <span className="mr-2 text-xs">대기순번</span>
+            <span className="mr-2 text-lg">대기순번</span>
             <span
               ref={positionRef}
               className="text-[#375A4E] font-semibold"
             ></span>
           </div>
           <div>
-            <span className="mr-2 text-xs">남은 시간</span>
+            <span className="mr-2 text-lg">남은 시간</span>
             <span className="text-[#375A4E] font-semibold">
               {formatTime(estimatedWaitTime)}
             </span>
