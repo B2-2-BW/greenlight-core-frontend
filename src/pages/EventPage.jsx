@@ -49,6 +49,18 @@ function EventPage() {
     document.title = '이벤트 | Greenlight';
   }, []);
 
+  const connectSSE = () => {
+    const eventSource = new EventSource(`/sse/${customerId}`);
+
+    eventSource.onmessage = (event) => { // 연결 성공
+      console.log('[Greenlight] SSE 응답 데이터 :', event.data);
+    };
+
+    eventSource.onerror = (error) => { // 연결 오류
+      console.log('[Greenlight] SSE 연결 오류 :', error);
+    };
+  }
+
   // 페이지 로드 시 eventStatus 세팅
   useEffect(() => {
     const fetchEvent = async () => {
@@ -86,6 +98,9 @@ function EventPage() {
       });
       if (customerResponse?.data) {
         setCustomer(customerResponse.data);
+
+        //고객 SSE연결
+        connectSSE(customers);
       }
     };
     if (eventStatus === 'OPEN') {
@@ -104,6 +119,7 @@ function EventPage() {
       const customerStatusData = customerStatusResponse?.data;
 
       if (customerStatusData?.waitingPhase === 'READY') {
+        eventSource.close(); //대기열 입장하는 경우 SSE 연결 종료
         location.href = event.eventUrl;
         return;
       }
