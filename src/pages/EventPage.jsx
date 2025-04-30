@@ -119,8 +119,8 @@ function EventPage() {
       const customerStatusData = customerStatusResponse?.data;
 
       if (customerStatusData?.waitingPhase === 'READY') {
-        eventSource.close(); //대기열 입장하는 경우 SSE 연결 종료
         location.href = event.eventUrl;
+        eventSource.close(); //대기열 입장하는 경우 SSE 연결 종료
         return;
       }
 
