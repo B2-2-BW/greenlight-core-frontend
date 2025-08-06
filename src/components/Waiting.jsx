@@ -4,33 +4,31 @@ import { useState, useEffect } from 'react';
 import { GREENLIGHT_PROTOTYPE_CORE_API_URL } from '../config/config.js'
 
 
-function Waiting({ queueEnterResp }) {
-
+function Waiting({ queueEnterResp, setWaitStatus }) {
+ 
   const [sseResp, setSseResp] = useState(null);
 
   useEffect(() => {
+    document.title = '대기화면 | Greenlight';
+    
   const eventSource = new EventSource(GREENLIGHT_PROTOTYPE_CORE_API_URL+`/waiting/sse?actionId=${queueEnterResp.actionId}&customerId=${queueEnterResp.customerId}`);
   //const eventSource = new EventSource(`http://15.164.75.216:18080/waiting/sse?actionId=1&customerId=1:0MGQ4TB0V61BZ`);
 
   eventSource.onmessage = (event) => {
     setSseResp(JSON.parse(event.data));
-    console.log('sseresp>>' + JSON.stringify(sseResp));
-    console.log('[] SSE 응답 데이터 :', event.data);
+    console.log('[Greenlight] sse 응답결과' + JSON.stringify(sseResp));
   };
 
   eventSource.onerror = (error) => {
-    console.error('[] SSE 연결 오류 :', error);
+    console.error('SSE 연결 오류 :', error);
     eventSource.close();
   };
-
-  return () => {
-    eventSource.close();
-  };
-  }, [queueEnterResp?.actionId, queueEnterResp?.customerId]);
-  
-  useEffect(() => {
-  console.log('sseresp updated:', sseResp); // 상태 변경 감지용
-}, [sseResp]);
+    
+    if (sseResp?.waitStatus == 'READY') {
+        eventSource.close();
+        setWaitStatus('READY')
+    }
+  }, [sseResp]);
 
   return (
     <div className="m-auto w-[75%] max-w-[320px] flex flex-col items-center">
@@ -46,7 +44,6 @@ function Waiting({ queueEnterResp }) {
       <PositionPanel
         position={sseResp?.position}
         estimatedWaitTime={sseResp?.estimatedWaitTime}
-        isReady={'WAiting' === 'READY'}
       />
       <section className="flex flex-col items-center text-neutral-500 mb-5">
         <p>잠시만 기다리시면 순서에 따라 자동 접속됩니다.</p>

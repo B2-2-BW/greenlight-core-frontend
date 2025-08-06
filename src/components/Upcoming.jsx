@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import confetti from 'canvas-confetti';
 
-function Upcoming({ actionData, setLandingTimeYn}) {
+function Upcoming({ actionData, setLandingTimeYn }) {
+  document.title = '랜딩 시작 전 | Greenlight';
+
   const landingStartAt = useMemo(
     () => Date.parse(actionData?.landingStartAt),
     [actionData]
