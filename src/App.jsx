@@ -1,12 +1,12 @@
 import './App.css';
-import EventPage from './pages/EventPage.jsx';
+import LandingPage from './pages/LandingPage.jsx';
 import { Route, Routes } from 'react-router';
 
 function App() {
   return (
     <>
       <Routes>
-        <Route path="/events/:eventName" element={<EventPage />} />
+        <Route path="/l/:landingId" element={<LandingPage />} />
       </Routes>
     </>
   );

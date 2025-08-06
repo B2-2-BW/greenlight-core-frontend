@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { GREENLIGHT_PROTOTYPE_CORE_API_URL } from './config.js';
+import { GREENLIGHT_PROTOTYPE_CORE_API_URL } from '../config/config';
 
 const ApiClient = axios.create({
   baseURL: GREENLIGHT_PROTOTYPE_CORE_API_URL,

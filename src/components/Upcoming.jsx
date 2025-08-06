@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import confetti from 'canvas-confetti';
 
-function Upcoming({ event, reloadEventStatus }) {
-  const eventStartTime = useMemo(
-    () => Date.parse(event?.eventStartTime),
-    [event]
+function Upcoming({ actionData, setLandingTimeYn}) {
+  const landingStartAt = useMemo(
+    () => Date.parse(actionData?.landingStartAt),
+    [actionData]
   );
   const calculateTimeLeft = useCallback(() => {
-    return Math.max(eventStartTime - Date.now(), 0) / 1000;
-  }, [eventStartTime]);
+    return Math.max(landingStartAt - Date.now(), 0) / 1000;
+  }, [landingStartAt]);
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
   const [shouldGetReady, setShouldGetReady] = useState(false);
 
@@ -19,13 +19,14 @@ function Upcoming({ event, reloadEventStatus }) {
         setShouldGetReady(true);
       }
       if (diff <= 0) {
-        reloadEventStatus(event?.eventStartTime, event?.eventEndTime);
+        //랜딩시간 되는 경우 다시 대기열 화면으로 이동
+        setLandingTimeYn(true);
       }
       setTimeLeft(diff);
     }, 1000);
 
     return () => clearInterval(interval); // 컴포넌트 언마운트 시 정리
-  }, [eventStartTime]);
+  }, [landingStartAt]);
 
   const formatTime = (ms) => {
     if (ms <= 1) {
@@ -43,7 +44,8 @@ function Upcoming({ event, reloadEventStatus }) {
       fanfare(mouseEvent);
     }
     if (calculateTimeLeft() <= 0) {
-      reloadEventStatus(event?.eventStartTime, event?.eventEndTime);
+      //랜딩시간 되는 경우 다시 대기열 화면으로 이동
+      setLandingTimeYn(true);
     }
   };
 
