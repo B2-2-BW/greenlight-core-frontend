@@ -1,13 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CountUp } from 'countup.js';
 
 function PositionPanel({ position, estimatedWaitTime, isReady }) {
   const positionRef = useRef(null);
   const countUpInstance = useRef(null);
+  const [timeLeft, setTimeLeft] = useState(estimatedWaitTime);
 
   const options = {
     duration: 0.5,
   };
+
   useEffect(() => {
     if (positionRef.current && !countUpInstance.current) {
       countUpInstance.current = new CountUp(
@@ -25,6 +27,24 @@ function PositionPanel({ position, estimatedWaitTime, isReady }) {
     }
   }, [position, isReady]);
 
+  // estimatedWaitTime prop이 바뀌면 timeLeft 초기화
+  useEffect(() => {
+    setTimeLeft(estimatedWaitTime);
+  }, [estimatedWaitTime]);
+
+  // timeLeft 카운트다운 처리
+  useEffect(() => {
+    if (isReady) return; // 준비됐으면 카운트다운 중지
+
+    if (timeLeft <= 0) return;
+
+    const timerId = setInterval(() => {
+      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [timeLeft, isReady]);
+
   const formatTime = (s) => {
     if (s < 0) {
       return 'N/A';
@@ -36,6 +56,7 @@ function PositionPanel({ position, estimatedWaitTime, isReady }) {
     }
     return `약 ${minutes}분 ${seconds}초`;
   };
+
   return (
     <div className="w-full bg-[#F5E7F4] py-2 my-4 text-xl text-center rounded">
       {isReady ? (
@@ -55,7 +76,7 @@ function PositionPanel({ position, estimatedWaitTime, isReady }) {
           <div>
             <span className="mr-2 text-lg">남은 시간</span>
             <span className="text-[#375A4E] font-semibold">
-              {formatTime(estimatedWaitTime)}
+              {formatTime(timeLeft)}
             </span>
           </div>
         </>

@@ -1,6 +1,7 @@
 import Spinner from './Spinner.jsx';
 import PositionPanel from './PositionPanel.jsx';
 import { useState, useEffect } from 'react';
+import AdImage from './AdImage.jsx';
 import { GREENLIGHT_PROTOTYPE_CORE_API_URL } from '../config/config.js'
 
 
@@ -32,14 +33,27 @@ function Waiting({ queueEnterResp, setWaitStatus }) {
 
   return (
     <div className="m-auto w-[75%] max-w-[320px] flex flex-col items-center">
-      <div className="relative h-12">
-        <Spinner />
+      <div className="w-full flex flex-col items-center">
+        <div className="w-[80%] flex flex-col items-start">
+          <div className="text-xs font-bold text-gray-900 bg-yellow-400 py-[2px] px-[6px] rounded-full mb-1 shadow-sm">
+            AD
+          </div>
+          <img
+            src="/resources/images/adSample.png"
+            alt="광고구좌 샘플"
+            className="w-full h-auto rounded shadow-md"
+          />
+        </div>
       </div>
       <section className="w-full flex flex-col items-center">
         <h1 className="text-2xl font-bold mt-5">
           사용자가 많아 접속 대기중이에요
         </h1>
       </section>
+
+      <div className="relative h-12">
+        <Spinner />
+      </div>
 
       <PositionPanel
         position={sseResp?.position}
