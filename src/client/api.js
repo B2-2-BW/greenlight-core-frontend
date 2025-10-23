@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { GREENLIGHT_PROTOTYPE_CORE_API_URL } from '../config/config';
+import { GREENLIGHT_CORE_API_URL } from '../config/config';
 
 const ApiClient = axios.create({
-  baseURL: GREENLIGHT_PROTOTYPE_CORE_API_URL,
+  baseURL: GREENLIGHT_CORE_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },

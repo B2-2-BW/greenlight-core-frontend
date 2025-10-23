@@ -1,36 +1,37 @@
 import Spinner from './Spinner.jsx';
 import PositionPanel from './PositionPanel.jsx';
 import { useState, useEffect } from 'react';
-import { GREENLIGHT_PROTOTYPE_CORE_API_URL } from '../config/config.js'
-
+import { GREENLIGHT_CORE_API_URL } from '../config/config.js';
 
 function Waiting({ queueEnterResp }) {
-
   const [sseResp, setSseResp] = useState(null);
 
   useEffect(() => {
-  const eventSource = new EventSource(GREENLIGHT_PROTOTYPE_CORE_API_URL+`/waiting/sse?actionId=${queueEnterResp.actionId}&customerId=${queueEnterResp.customerId}`);
-  //const eventSource = new EventSource(`http://15.164.75.216:18080/waiting/sse?actionId=1&customerId=1:0MGQ4TB0V61BZ`);
+    const eventSource = new EventSource(
+      GREENLIGHT_CORE_API_URL +
+        `/waiting/sse?actionId=${queueEnterResp.actionId}&customerId=${queueEnterResp.customerId}`
+    );
+    //const eventSource = new EventSource(`http://15.164.75.216:18080/waiting/sse?actionId=1&customerId=1:0MGQ4TB0V61BZ`);
 
-  eventSource.onmessage = (event) => {
-    setSseResp(JSON.parse(event.data));
-    console.log('sseresp>>' + JSON.stringify(sseResp));
-    console.log('[] SSE 응답 데이터 :', event.data);
-  };
+    eventSource.onmessage = (event) => {
+      setSseResp(JSON.parse(event.data));
+      console.log('sseresp>>' + JSON.stringify(sseResp));
+      console.log('[] SSE 응답 데이터 :', event.data);
+    };
 
-  eventSource.onerror = (error) => {
-    console.error('[] SSE 연결 오류 :', error);
-    eventSource.close();
-  };
+    eventSource.onerror = (error) => {
+      console.error('[] SSE 연결 오류 :', error);
+      eventSource.close();
+    };
 
-  return () => {
-    eventSource.close();
-  };
+    return () => {
+      eventSource.close();
+    };
   }, [queueEnterResp?.actionId, queueEnterResp?.customerId]);
-  
+
   useEffect(() => {
-  console.log('sseresp updated:', sseResp); // 상태 변경 감지용
-}, [sseResp]);
+    console.log('sseresp updated:', sseResp); // 상태 변경 감지용
+  }, [sseResp]);
 
   return (
     <div className="m-auto w-[75%] max-w-[320px] flex flex-col items-center">
