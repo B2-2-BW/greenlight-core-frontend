@@ -1,56 +1,79 @@
 import Spinner from './Spinner.jsx';
 import PositionPanel from './PositionPanel.jsx';
 import { useState, useEffect } from 'react';
-import { GREENLIGHT_CORE_API_URL } from '../config/config.js';
+import AdImage from './AdImage.jsx';
+import { GREENLIGHT_PROTOTYPE_CORE_API_URL } from '../config/config.js'
 
-function Waiting({ queueEnterResp }) {
+
+function Waiting({ queueEnterResp, setWaitStatus }) {
+
   const [sseResp, setSseResp] = useState(null);
 
   useEffect(() => {
-    const eventSource = new EventSource(
-      GREENLIGHT_CORE_API_URL +
-        `/waiting/sse?actionId=${queueEnterResp.actionId}&customerId=${queueEnterResp.customerId}`
-    );
-    //const eventSource = new EventSource(`http://15.164.75.216:18080/waiting/sse?actionId=1&customerId=1:0MGQ4TB0V61BZ`);
+    document.title = '대기화면 | Greenlight';
 
-    eventSource.onmessage = (event) => {
-      setSseResp(JSON.parse(event.data));
-      console.log('sseresp>>' + JSON.stringify(sseResp));
-      console.log('[] SSE 응답 데이터 :', event.data);
-    };
+  const eventSource = new EventSource(GREENLIGHT_PROTOTYPE_CORE_API_URL+`/waiting/sse?actionId=${queueEnterResp.actionId}&customerId=${queueEnterResp.customerId}`);
 
-    eventSource.onerror = (error) => {
-      console.error('[] SSE 연결 오류 :', error);
-      eventSource.close();
-    };
+  eventSource.onmessage = (event) => {
+    const parsed = JSON.parse(event.data);
+  setSseResp(parsed);
+  console.log('[Greenlight] sse 응답결과', parsed); // 이게 실제 최신 데이터
+  };
 
-    return () => {
-      eventSource.close();
-    };
-  }, [queueEnterResp?.actionId, queueEnterResp?.customerId]);
+  eventSource.onerror = (error) => {
+    console.error('SSE 연결 오류 :', error);
+    eventSource.close();
+  };
 
-  useEffect(() => {
-    console.log('sseresp updated:', sseResp); // 상태 변경 감지용
+    if (sseResp?.waitStatus == 'READY') {
+        eventSource.close();
+        setWaitStatus('READY')
+    }
   }, [sseResp]);
 
   return (
     <div className="m-auto w-[75%] max-w-[320px] flex flex-col items-center">
-      <div className="relative h-12">
-        <Spinner />
+      <div className="w-full flex flex-col items-center relative">
+
+        {/* 로고 이미지 (더현대홈으로 이동 연결) */}
+        <a href="https://m.thehyundai.com/Home.html"  className="block w-1/3 mb-4 z-10">
+        <img
+          src="/resources/images/thd_logo.png"
+          alt="로고"
+          className="w-full h-auto rounded"
+          />
+          </a>
+
+        {/* 광고 이미지 */}
+        <div className="relative w-full">
+          <img
+            src="/resources/images/adSample.png"
+            alt="광고구좌 샘플"
+            className="w-full h-auto rounded shadow-md"
+          />
+
+          {/* AD 태그 */}
+          <div className="absolute top-2 right-2 text-xs font-bold text-gray-900 bg-yellow-400 py-[2px] px-[6px] rounded-full shadow-sm">
+            AD
+          </div>
+        </div>
       </div>
       <section className="w-full flex flex-col items-center">
-        <h1 className="text-2xl font-bold mt-5">
+        <h1 className="text-lg sm:text-xl md:text-2xl font-bold mt-5">
           사용자가 많아 접속 대기중이에요
         </h1>
       </section>
 
+      <div className="relative h-12">
+        <Spinner />
+      </div>
+
       <PositionPanel
         position={sseResp?.position}
         estimatedWaitTime={sseResp?.estimatedWaitTime}
-        isReady={'WAiting' === 'READY'}
       />
       <section className="flex flex-col items-center text-neutral-500 mb-5">
-        <p>잠시만 기다리시면 순서에 따라 자동 접속됩니다.</p>
+        <p className='whitespace-nowrap'>잠시만 기다리시면 순서에 따라 자동 접속됩니다.</p>
         <p>새로고침하면 대기시간이 길어질 수 있어요</p>
       </section>
       <section className="flex flex-col items-center">
