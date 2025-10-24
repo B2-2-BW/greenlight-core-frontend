@@ -1,4 +1,3 @@
-import React from 'react';
 import clsx from 'clsx';
 
 const AdImage = () => {
@@ -24,11 +23,7 @@ const AdImage = () => {
     'shadow-sm'
   );
 
-  const imageClass = clsx(
-    'w-full',
-    'rounded',
-    'shadow-md'
-  );
+  const imageClass = clsx('w-full', 'rounded', 'shadow-md');
 
   return (
     <div className={containerClass}>
