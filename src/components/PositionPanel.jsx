@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 
-function PositionPanel({ position, estimatedWaitTime, isReady }) {
+function PositionPanel({ position, estimatedWaitTime, isReady, aheadCount, behindCount }) {
   const [timeLeft, setTimeLeft] = useState(estimatedWaitTime);
   const [positionLeft, setPositionLeft] = useState(position);
   const [isBlocked, setIsBlocked] = useState(false);
 
   // estimatedWaitTime prop이 바뀌면 timeLeft 초기화
   useEffect(() => {
-    if (estimatedWaitTime == -1) { //대기 잔여시간이 -1인경우 진입 불가 상태
+    if (estimatedWaitTime === -1) { //대기 잔여시간이 -1인경우 진입 불가 상태
       setIsBlocked(true);
     }
     setTimeLeft(estimatedWaitTime);
@@ -38,10 +38,15 @@ function PositionPanel({ position, estimatedWaitTime, isReady }) {
       ) : (
         <>
           <div className="mb-1">
-            <span className="mr-2 text-lg">대기순번</span>
-            <span className="text-[#375A4E] font-semibold">
-              {positionLeft}
-            </span>
+            <span className="mr-2 text-lg">앞에</span>
+            <span className="text-[#375A4E]">{aheadCount}</span>
+            <span className="mr-2 text-lg"> 명,</span>
+            {/*<span className="text-[#375A4E] font-semibold">*/}
+            {/*  {positionLeft}*/}
+            {/*</span>*/}
+            <span className="mr-2 text-lg">뒤에</span>
+            <span className="text-[#375A4E]">{behindCount}</span>
+            <span className="mr-2 text-lg"> 명의 대기가 있습니다</span>
           </div>
           <div>
             <span className="mr-2 text-lg">남은 시간</span>

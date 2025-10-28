@@ -72,6 +72,8 @@ function Waiting({ queueEnterResp, setWaitStatus }) {
 
       <PositionPanel
         position={sseResp?.position}
+        aheadCount={sseResp?.aheadCount}
+        behindCount={sseResp?.behindCount}
         estimatedWaitTime={sseResp?.estimatedWaitTime}
       />
       <section className="flex flex-col items-center text-neutral-500 mb-5">
