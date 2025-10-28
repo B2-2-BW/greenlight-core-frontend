@@ -37,7 +37,7 @@ export default function QueueProgressBar({ position, className = "" }) {
         className="w-full h-3 rounded-full bg-neutral-200 overflow-hidden"
       >
         <div
-         className="h-full rounded-full bg-green-500 transition-[width] duration-500 ease-out flex items-center justify-center"
+         className="h-full rounded-full bg-[#224d3c] transition-[width] duration-500 ease-out flex items-center justify-center"
          style={{ width: `${progress}%` }}
          >
           <span className="text-white text-xs font-semibold leading-none select-none">
