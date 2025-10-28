@@ -2,10 +2,10 @@ import Spinner from './Spinner.jsx';
 import PositionPanel from './PositionPanel.jsx';
 import { useState, useEffect } from 'react';
 import { GREENLIGHT_CORE_API_URL } from '../config/config.js';
+import ProgressBar from './ProgressBar.jsx';
 
 function Waiting({ queueEnterResp, setWaitStatus }) {
   const [sseResp, setSseResp] = useState(null);
-
   useEffect(() => {
     document.title = '대기화면 | Greenlight';
 
@@ -66,8 +66,14 @@ function Waiting({ queueEnterResp, setWaitStatus }) {
         </h1>
       </section>
 
-      <div className="relative h-12">
-        <Spinner />
+      {/*<div className="relative h-12">*/}
+      {/*  <Spinner />*/}
+      {/*</div>*/}
+
+      <div className="w-full px-4 my-2">
+        {sseResp?.position == null
+          ? <div className="relative h-12"><Spinner /></div>
+          : <ProgressBar position={sseResp?.position} />}
       </div>
 
       <PositionPanel
@@ -83,9 +89,9 @@ function Waiting({ queueEnterResp, setWaitStatus }) {
         <p>새로고침하면 대기시간이 길어질 수 있어요</p>
       </section>
       <section className="flex flex-col items-center">
-        <button className="rounded-full text-neutral-700 border-[1px] border-neutral-200 px-2 py-2">
-          이전으로 돌아가기
-        </button>
+        {/*<button className="rounded-full text-neutral-700 border-[1px] border-neutral-200 px-2 py-2">*/}
+        {/*  이전으로 돌아가기*/}
+        {/*</button>*/}
       </section>
     </div>
   );
