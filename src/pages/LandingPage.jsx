@@ -1,6 +1,6 @@
 import Waiting from '../components/Waiting.jsx';
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useParams,useLocation } from 'react-router-dom';
 import Upcoming from '../components/Upcoming.jsx';
 import { GREENLIGHT_CORE_API_URL } from '../config/config.js';
 import SplashScreen from '../components/SplashScreen.jsx';
@@ -26,6 +26,36 @@ function LandingPage() {
   const [landingTimeYn, setLandingTimeYn] = useState(false);
   const [waitStatus, setWaitStatus] = useState(null);
   const [queueEnterResp, setQueueEnterResp] = useState(null);
+  const location = useLocation();
+  // URL 쿼리에서 redirectUrl 추출 (있을 때만 사용)
+  const redirectOverride = useMemo(() => {
+    const sp = new URLSearchParams(location.search);
+    const val = sp.get('redirectUrl');
+    if (!val) return null;
+    try {
+      const decoded = decodeURIComponent(val);
+      // http/https만 허용 (원하면 제거 가능)
+      if (/^https?:\/\//i.test(decoded)) return decoded;
+      if (/^https?:\/\//i.test(val)) return val;
+      return null;
+    } catch {
+      return /^https?:\/\//i.test(val) ? val : null;
+    }
+  }, [location.search]);
+  // 1) 앱에 들어온 '초기 referrer' 스냅샷 (외부→우리 앱 진입 경로)
+  const initialReferrerRef = useRef(document.referrer || null);
+  useEffect(() => {
+    // console.log('[Initial Referrer]', initialReferrerRef.current);
+    console.log('[Current URL]', window.location.href);
+  }, []);
+
+  // 2) SPA 내부 라우팅에서의 '직전 라우트' 추적
+  const prevRouteRef = useRef(null);
+  useEffect(() => {
+    const current = location.pathname + location.search + location.hash;
+    console.log('[Prev Route]', prevRouteRef.current, '→ [Current Route]', current);
+    prevRouteRef.current = current;
+  }, [location]);
 
   useEffect(() => {
     const setVh = () => {
@@ -76,8 +106,8 @@ function LandingPage() {
     const fetchQueue = async () => {
       try {
         const queueRequest = {
-          actionId: actionData.id,
-          destinationUrl: actionData.landingDestinationUrl,
+          actionId: actionData.id,// redirectUrl이 있으면 그걸로 목적지를 덮어씀
+          destinationUrl: redirectOverride ?? actionData.landingDestinationUrl,
         };
         const queueEnterResp = await ApiClient.post(
           '/api/v1/queue/check-or-enter',
@@ -97,29 +127,34 @@ function LandingPage() {
     };
 
     if (landingTimeYn) fetchQueue();
-  }, [landingTimeYn]);
+  }, [landingTimeYn, actionData?.id, actionData?.landingDestinationUrl, redirectOverride]);
 
   // Step 4: 대기열 필요 없는 상태는 자동 이동
   useEffect(() => {
     //대기필요 없는 상태인 경우
     if (
       redirectStatuses.includes(waitStatus) &&
-      actionData?.landingDestinationUrl
+      (redirectOverride || actionData?.landingDestinationUrl)
     ) {
-      window.location.href = actionData.landingDestinationUrl;
+      const url = redirectOverride ?? actionData.landingDestinationUrl;
+      console.log('[Redirect → non-waiting]', url);
+      window.location.href = url;
     }
 
     //입장 가능 상태인경우 토큰이랑 같이 보내줌
     if (waitStatus == 'READY') {
-      let destinationUrl = queueEnterResp.destinationUrl;
+      // 서버가 큐 진입 때 받은 destinationUrl을 보통 되돌려줌.
+      // 그래도 확실하게 redirectOverride를 우선 적용.
+      let destinationUrl = redirectOverride || queueEnterResp?.destinationUrl;
       if (destinationUrl && destinationUrl.includes('?')) {
         destinationUrl += '&g=' + queueEnterResp.jwtToken;
       } else {
         destinationUrl += '?&g=' + queueEnterResp.jwtToken;
       }
+      console.log('[Redirect → READY]', destinationUrl);
       window.location.href = destinationUrl;
     }
-  }, [waitStatus, actionData, queueEnterResp]);
+  }, [waitStatus, actionData, queueEnterResp, redirectOverride]);
 
   // 상태별 렌더링 함수
   const renderSwitch = () => {
