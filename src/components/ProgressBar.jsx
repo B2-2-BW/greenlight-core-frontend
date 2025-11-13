@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from 'react';
 
 /**
  * 초기 position을 내부에서 한 번만 스냅샷 → 현재 position이 줄수록 % 상승
@@ -6,9 +6,12 @@ import { useEffect, useMemo, useRef } from "react";
  *  - position: 현재 나의 대기 순서 (number | null)
  *  - className: 래퍼 클래스 (선택)
  */
-export default function QueueProgressBar({ position, className = "" }) {
+export default function QueueProgressBar({ position, className = '' }) {
   const initialRef = useRef(null);
 
+  useEffect(() => {
+    initialRef.current = 15;
+  }, []);
   // 최초 position만 1회 저장
   useEffect(() => {
     if (initialRef.current == null && position != null) {
@@ -37,11 +40,11 @@ export default function QueueProgressBar({ position, className = "" }) {
         className="w-full h-3 rounded-full bg-neutral-200 overflow-hidden"
       >
         <div
-         className="h-full rounded-full bg-[#09917c] transition-[width] duration-500 ease-out flex items-center justify-center"
-         style={{ width: `${progress}%` }}
-         >
+          className="h-full rounded-full bg-[#375A42] transition-[width] duration-500 ease-out flex items-center justify-center"
+          style={{ width: `${progress}%` }}
+        >
           <span className="text-white text-xs font-semibold leading-none select-none">
-           {/*{progress}%*/}
+            {/*{progress}%*/}
           </span>
         </div>
       </div>
