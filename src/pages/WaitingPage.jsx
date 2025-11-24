@@ -70,6 +70,9 @@ export default function WaitingPage() {
   }, [actionData]);
 
   const checkOrEnter = async () => {
+    if (actionData) {
+      console.log('call check-or-enter', actionData);
+    }
     const body = {
       actionId: actionData.id, // redirectUrl이 있으면 그걸로 목적지를 덮어씀
       destinationUrl: redirectOverride ?? actionData.landingDestinationUrl,
@@ -105,23 +108,23 @@ export default function WaitingPage() {
     }
   };
 
-  const eventSourceRef = useRef(null);
+  const [eventSource, setEventSource] = useState(null);
 
   // 3. customerId가 있을때 sse 연결 시작
   useEffect(() => {
     if (customerId == null) {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-        eventSourceRef.current = null;
+      if (eventSource) {
+        eventSource.close();
+        setEventSource(null);
       }
       return;
     }
     console.log('sse 연결 시작');
-    const eventSource = new EventSource(
+    const ev = new EventSource(
       GREENLIGHT_CORE_API_URL + `/waiting/sse?customerId=${customerId}`
     );
 
-    eventSource.onmessage = (event) => {
+    ev.onmessage = (event) => {
       if (isLoading) {
         setIsLoading(false);
       }
@@ -137,15 +140,14 @@ export default function WaitingPage() {
       console.log('[Greenlight] sse 응답결과', data); // 이게 실제 최신 데이터
     };
 
-    eventSource.onerror = (error) => {
+    ev.onerror = (error) => {
       console.error('SSE 연결 오류 :', error);
-      eventSource.close();
+      ev.close();
+      setEventSource(null);
     };
-  }, [customerId]);
 
-  if (eventSourceRef.current) {
-    eventSourceRef.current.close();
-  }
+    setEventSource(ev);
+  }, [customerId, eventSource]);
 
   // Step 4: 대기열 필요 없는 상태는 자동 이동
   useEffect(() => {
