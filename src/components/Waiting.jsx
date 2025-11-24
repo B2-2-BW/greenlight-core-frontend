@@ -1,11 +1,12 @@
 import Spinner from './Spinner.jsx';
 import PositionPanel from './PositionPanel.jsx';
 import { useState, useEffect } from 'react';
-import { GREENLIGHT_CORE_API_URL } from '../config/config.js';
+import { GREENLIGHT_CORE_API_URL, S3_BASE_URL } from '../config/config.js';
 import ProgressBar from './ProgressBar.jsx';
 
-function Waiting({ queueEnterResp, setWaitStatus }) {
+function Waiting({ queueEnterResp, setWaitStatus, actionData }) {
   const [sseResp, setSseResp] = useState(null);
+
   useEffect(() => {
     document.title = '대기화면 | Greenlight';
 
@@ -17,7 +18,7 @@ function Waiting({ queueEnterResp, setWaitStatus }) {
     eventSource.onmessage = (event) => {
       const parsed = JSON.parse(event.data);
       setSseResp(parsed);
-      console.log('[Greenlight] sse 응답결과', parsed); // 이게 실제 최신 데이터
+      console.log('[Greenlight] sse 응답결과', parsed);
     };
 
     eventSource.onerror = (error) => {
@@ -25,12 +26,23 @@ function Waiting({ queueEnterResp, setWaitStatus }) {
       eventSource.close();
     };
 
-    if (sseResp?.waitStatus == 'READY') {
+    if (sseResp?.waitStatus === 'READY') {
       eventSource.close();
       setWaitStatus('READY');
     }
-  }, [sseResp]);
+  }, [sseResp, queueEnterResp, setWaitStatus]); // 의존성 배열 보강
 
+  // [추가] 이미지 URL 생성 함수
+  const getImageUrl = () => {
+    const imageUrl = actionData?.imageUrl;
+    if (!imageUrl) {
+      return '/resources/images/adSample.png';
+    }
+    if (imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+    return `${S3_BASE_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+  };
   return (
     <div className="m-auto w-[75%] max-w-[320px] flex flex-col items-center">
       <div className="w-full flex flex-col items-center relative">
@@ -49,12 +61,14 @@ function Waiting({ queueEnterResp, setWaitStatus }) {
         {/* 광고 이미지 */}
         <div className="relative w-full">
           <img
-            src="/resources/images/adSample.png"
-            alt="광고구좌 샘플"
+            src={getImageUrl()} // [수정] 동적 URL 사용
+            alt="대기열 이미지"
             className="w-full h-auto rounded shadow-md"
           />
 
-          {/* AD 태그 */}
+          {/* AD 태그 (이미지가 있을 때만 보이거나, 정책에 따라 유지) */}
+          {/* 만약 사용자가 등록한 이미지가 '광고'가 아니라면 이 태그는 제거하거나 조건부로 보여줘야 할 수 있습니다. */}
+          {/* 현재는 UI 유지를 위해 남겨둡니다. */}
           <div className="absolute top-2 right-2 text-xs font-bold text-gray-900 bg-yellow-400 py-[2px] px-[6px] rounded-full shadow-sm">
             AD
           </div>

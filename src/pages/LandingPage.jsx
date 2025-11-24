@@ -178,6 +178,7 @@ function LandingPage() {
             <Waiting
               queueEnterResp={queueEnterResp}
               setWaitStatus={setWaitStatus}
+              actionData={actionData}
             />
           )
         );
