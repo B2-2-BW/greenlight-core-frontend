@@ -27,6 +27,21 @@ export default function WaitingPage() {
   const [progress, setProgress] = useState(0);
   const { landingId } = useParams();
 
+  // [POC용] 액션 그룹 ID에 따라 이미지 경로 반환하는 함수
+  const getImageUrl = () => {
+    const groupId = actionData?.actionGroupId; // actionData에서 ID 확인
+
+    if (groupId === 6) {
+      return '/resources/images/LI_sample.png';
+    }
+    if (groupId === 7) {
+      return '/resources/images/GF_sample.png';
+    }
+    
+    // 기본 이미지
+    return '/resources/images/adSample.png';
+  };
+
   useEffect(() => {
     let newProgress =
       (initialPosition.current - currentPosition) / initialPosition.current;
@@ -209,7 +224,7 @@ export default function WaitingPage() {
             {/* 광고 이미지 */}
             <div className="relative h-[40vh]">
               <img
-                src="/resources/images/adSample.png"
+                src={getImageUrl()}
                 alt="광고구좌 샘플"
                 className="max-h-full rounded shadow-md object-contain"
               />
