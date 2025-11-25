@@ -108,46 +108,71 @@ export default function WaitingPage() {
     }
   };
 
-  const [eventSource, setEventSource] = useState(null);
-
+  const eventSourceRef = useRef(null);
+  const eventRetryTimeoutRef = useRef(null);
+  const retryInterval = 5000;
   // 3. customerId가 있을때 sse 연결 시작
   useEffect(() => {
     if (customerId == null) {
-      if (eventSource) {
-        eventSource.close();
-        setEventSource(null);
-      }
       return;
     }
-    console.log('sse 연결 시작');
-    const ev = new EventSource(
-      GREENLIGHT_CORE_API_URL + `/waiting/sse?customerId=${customerId}`
-    );
 
-    ev.onmessage = (event) => {
-      if (isLoading) {
-        setIsLoading(false);
+    const cleanup = () => {
+      if (eventRetryTimeoutRef.current !== null) {
+        window.clearTimeout(eventRetryTimeoutRef.current);
+        eventRetryTimeoutRef.current = null;
       }
-      const data = JSON.parse(event.data);
-
-      if (initialPosition.current == null) {
-        initialPosition.current = data.position;
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
       }
-      setCurrentPosition(data.position);
-      setWaitStatus(data.waitStatus);
-      setEstimatedWaitTime(data.estimatedWaitTime);
-      setBehindCount(data.behindCount);
-      console.log('[Greenlight] sse 응답결과', data); // 이게 실제 최신 데이터
     };
 
-    ev.onerror = (error) => {
-      console.error('SSE 연결 오류 :', error);
-      ev.close();
-      setEventSource(null);
+    const connect = () => {
+      cleanup(); // 기존 연결/타이머 정리
+
+      const es = new EventSource(
+        GREENLIGHT_CORE_API_URL + `/waiting/sse?customerId=${customerId}`
+      );
+      eventSourceRef.current = es;
+
+      es.onopen = () => {
+        console.log('SSE connected');
+      };
+
+      es.onmessage = (event) => {
+        if (isLoading) {
+          setIsLoading(false);
+        }
+        const data = JSON.parse(event.data);
+
+        if (initialPosition.current == null) {
+          initialPosition.current = data.position;
+        }
+        setCurrentPosition(data.position);
+        setWaitStatus(data.waitStatus);
+        setEstimatedWaitTime(data.estimatedWaitTime);
+        setBehindCount(data.behindCount);
+        console.log('[Greenlight] sse 응답결과', data); // 이게 실제 최신 데이터
+      };
+
+      es.onerror = (error) => {
+        console.log('SSE 연결 재시도중'); // error는 단순 이벤트가 노출되므로 운영에서는 출력 제외
+        es.close();
+        // 일정 시간 후 재연결
+        eventRetryTimeoutRef.current = window.setTimeout(
+          connect,
+          retryInterval
+        );
+      };
     };
 
-    setEventSource(ev);
-  }, [customerId, eventSource]);
+    connect();
+
+    return () => {
+      cleanup();
+    };
+  }, [customerId]);
 
   // Step 4: 대기열 필요 없는 상태는 자동 이동
   useEffect(() => {
