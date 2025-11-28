@@ -35,12 +35,37 @@ export default function WaitingPage() {
       return '/resources/images/LI_sample.png';
     }
     if (groupId === 7) {
-      return '/resources/images/GF_sample.png';
+      return '/resources/images/GF_sample2.png';
     }
     
     // 기본 이미지
     return '/resources/images/adSample.png';
   };
+
+  // [POC용2] 액션 그룹 ID에 따른 스타일 반환 함수 추가
+  const getThemeStyles = () => {
+    const groupId = actionData?.actionGroupId;
+
+    // 특정 그룹 ID (예: 7) 일 때 색상 변경
+    if (groupId === 7) { 
+      return {
+        headerText: 'text-[#1e1e1e]',      // 2. 접속 대기중이에요 텍스트 색
+        positionNum: 'text-[#918C00]',     // 1. 나의 대기순서 숫자 색
+        boxBg: 'bg-[#f5f5f5]',             // 3. 박스 배경 색
+        behindNum: 'text-[#918C00]',       // 4. 뒤에 기다리는 사람 숫자 색
+      };
+    }
+
+    // 기본 스타일 (원래 코드의 색상값)
+    return {
+      headerText: '',                      // 기본 검정
+      positionNum: 'text-[#375A4E]',       // 기존 초록색
+      boxBg: 'bg-[#F5E7F4]',               // 기존 분홍색 배경
+      behindNum: 'text-[#375A4E]',         // 기존 초록색
+    };
+  };
+
+  const theme = getThemeStyles(); // 스타일 객체 생성
 
   useEffect(() => {
     let newProgress =
@@ -236,11 +261,27 @@ export default function WaitingPage() {
             </div>
           </div>
           <section className="w-full flex flex-col items-center mt-5 mb-3">
-            <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-center">
+            {/* 그린푸드 poc */}
+            <h1 className={`text-lg sm:text-xl md:text-2xl font-semibold text-center ${theme.headerText}`}>
+            {/* <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-center"> */}
               사용자가 많아 접속 대기중이에요
             </h1>
           </section>
-
+          {/* 그린푸드 poc */}
+          <MyPosition
+            position={currentPosition}
+            isLoading={isLoading}
+            progress={progress}
+            numColor={theme.positionNum} 
+          />
+          <PositionPanelRenewal
+            isLoading={isLoading}
+            behindCount={behindCount}
+            estimatedWaitTime={estimatedWaitTime}
+            boxColor={theme.boxBg}
+            numColor={theme.behindNum}
+          />
+          {/* 
           <MyPosition
             position={currentPosition}
             isLoading={isLoading}
@@ -252,6 +293,7 @@ export default function WaitingPage() {
             behindCount={behindCount}
             estimatedWaitTime={estimatedWaitTime}
           />
+           */}
           <section className="flex flex-col items-center text-neutral-500 mb-5 text-xs">
             <p className="whitespace-nowrap">
               잠시만 기다리시면 순서에 따라 자동 접속됩니다.
