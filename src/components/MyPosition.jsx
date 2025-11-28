@@ -2,7 +2,7 @@ import Spinner from './Spinner.jsx';
 import ProgressBarRenewal from './ProgressBarRenewal.jsx';
 import { NumberUtil } from '../util/numberUtil.js';
 
-export default function MyPosition({ position, isLoading, progress }) {
+export default function MyPosition({ position, isLoading, progress, numColor }) {
   return (
     <div className="w-full h-20">
       {isLoading ? (
@@ -18,7 +18,9 @@ export default function MyPosition({ position, isLoading, progress }) {
         <>
           <div className="flex flex-col mb-2 items-center">
             <span className="text-sm">나의 대기 순서</span>
-            <span className="text-4xl text-[#375A4E] font-semibold">
+            {/* 그린푸드 poc 용 하드코딩 */}
+            <span className={`text-4xl font-semibold ${numColor || 'text-[#375A4E]'}`}>
+            {/* <span className="text-4xl text-[#375A4E] font-semibold"> */}
               {NumberUtil.formatNumber(position)}
             </span>
           </div>

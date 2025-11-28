@@ -5,6 +5,8 @@ export default function PositionPanelRenewal({
   estimatedWaitTime,
   isReady,
   behindCount,
+  boxColor,
+  numColor
 }) {
   const [timeLeft, setTimeLeft] = useState(estimatedWaitTime);
   const [isBlocked, setIsBlocked] = useState(false);
@@ -34,7 +36,9 @@ export default function PositionPanelRenewal({
 
   return (
     <>
-      <div className="h-16 w-full flex flex-col justify-center bg-[#F5E7F4] py-2 my-4 text-sm sm:text-base md:text-lg text-center rounded">
+      {/* 그린푸드 poc */}
+      <div className={`h-16 w-full flex flex-col justify-center py-2 my-4 text-sm sm:text-base md:text-lg text-center rounded ${boxColor || 'bg-[#F5E7F4]'}`}>
+      {/* <div className="h-16 w-full flex flex-col justify-center bg-[#F5E7F4] py-2 my-4 text-sm sm:text-base md:text-lg text-center rounded"> */}
         {isLoading ? (
           <div className="h-full flex flex-col justify-center items-center">
             <span className="px-4">
@@ -54,14 +58,18 @@ export default function PositionPanelRenewal({
           <>
             <div>
               <span className="mr-2">예상 대기 시간</span>
-              <span className="text-[#375A4E] font-semibold">
+              <span className={`font-semibold ${numColor || 'text-[#375A4E]'}`}>
+              {/* <span className="text-[#375A4E] font-semibold"> */}
                 {formatTime(timeLeft)}
               </span>
             </div>
-            <div className="text-neutral-600">
+            {/* <div className="text-neutral-600"> */}
+            <div>
               <span className="mr-2"></span>
               <span className="mr-1">뒤에</span>
-              <span className="text-[#375A4E] font-semibold">
+              {/* 그린푸드 poc */}
+              <span className={`font-semibold ${numColor || 'text-[#375A4E]'}`}>
+              {/* <span className="text-[#375A4E] font-semibold"> */}
                 {behindCount}
               </span>
               <span className="mr-2">명이 기다리고 있어요</span>
