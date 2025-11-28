@@ -37,7 +37,7 @@ export default function WaitingPage() {
     if (groupId === 7) {
       return '/resources/images/GF_sample2.png';
     }
-    
+
     // 기본 이미지
     return '/resources/images/adSample.png';
   };
@@ -100,24 +100,22 @@ export default function WaitingPage() {
   // 1. 최초 로딩 시 action 조회
   useEffect(() => {
     document.title = '랜딩페이지 | Greenlight';
-    // retryable로 래핑된 함수 생성
-    retryable(fetchAction, retryOptions).catch(console.error);
   }, []);
 
   // 2. action을 조회한 뒤 완료되면 입장요청
   useEffect(() => {
     retryable(checkOrEnter, retryOptions).catch(console.error);
-  }, [actionData]);
+  }, [landingId]);
 
   const checkOrEnter = async () => {
-    if (actionData) {
-      console.log('call check-or-enter', actionData);
+    if (landingId) {
+      console.log('call check-landing', landingId);
     }
     const body = {
-      actionId: actionData.id, // redirectUrl이 있으면 그걸로 목적지를 덮어씀
+      landingId: landingId, // redirectUrl이 있으면 그걸로 목적지를 덮어씀
       destinationUrl: redirectOverride ?? actionData.landingDestinationUrl,
     };
-    const res = await ApiClient.post('/api/v1/queue/check-or-enter', body);
+    const res = await ApiClient.post('/api/v1/queue/check-landing', body);
     if (res?.status === 200 && res?.data?.customerId != null) {
       const data = res.data;
       setCustomerId(data.customerId);
@@ -228,16 +226,27 @@ export default function WaitingPage() {
 
     //입장 가능 상태인경우 토큰이랑 같이 보내줌
     if (waitStatus === 'READY') {
-      // 서버가 큐 진입 때 받은 destinationUrl을 보통 되돌려줌.
-      // 그래도 확실하게 redirectOverride를 우선 적용.
       let redirectTo = redirectOverride || destinationUrl;
-      if (redirectTo && redirectTo.includes('?')) {
-        redirectTo += '&gUserId=' + customerId;
-      } else {
-        redirectTo += '?&gUserId=' + customerId;
+
+      if (redirectTo) {
+        // 1. 혹시 모를 해시(#) 처리 (해시는 건드리지 않고 분리)
+        const [urlBeforeHash, hash] = redirectTo.split('#');
+
+        // 2. 물음표(?) 기준으로 '경로'와 '쿼리' 분리
+        const [basePath, queryString] = urlBeforeHash.split('?');
+
+        // 3. 쿼리 파라미터 객체 생성 (쿼리가 없으면 빈 상태로 시작)
+        const params = new URLSearchParams(queryString || '');
+
+        // 4. gUserId 설정 (있으면 덮어쓰고, 없으면 추가됨 -> 중복 해결)
+        params.set('gUserId', customerId);
+
+        // 5. 기존 형식 그대로 재조립 (경로 + 새 쿼리 + 해시)
+        redirectTo = `${basePath}?${params.toString()}`;
+
+        console.log('[Redirect → READY]', redirectTo);
+        window.location.href = redirectTo;
       }
-      console.log('[Redirect → READY]', redirectTo);
-      window.location.href = redirectTo;
     }
   }, [waitStatus, actionData, destinationUrl, redirectOverride]);
 
