@@ -47,21 +47,21 @@ export default function WaitingPage() {
     const groupId = actionData?.actionGroupId;
 
     // 특정 그룹 ID (예: 7) 일 때 색상 변경
-    if (groupId === 7) { 
+    if (groupId === 7) {
       return {
-        headerText: 'text-[#1e1e1e]',      // 2. 접속 대기중이에요 텍스트 색
-        positionNum: 'text-[#918C00]',     // 1. 나의 대기순서 숫자 색
-        boxBg: 'bg-[#f5f5f5]',             // 3. 박스 배경 색
-        behindNum: 'text-[#918C00]',       // 4. 뒤에 기다리는 사람 숫자 색
+        headerText: 'text-[#1e1e1e]', // 2. 접속 대기중이에요 텍스트 색
+        positionNum: 'text-[#918C00]', // 1. 나의 대기순서 숫자 색
+        boxBg: 'bg-[#f5f5f5]', // 3. 박스 배경 색
+        behindNum: 'text-[#918C00]', // 4. 뒤에 기다리는 사람 숫자 색
       };
     }
 
     // 기본 스타일 (원래 코드의 색상값)
     return {
-      headerText: '',                      // 기본 검정
-      positionNum: 'text-[#375A4E]',       // 기존 초록색
-      boxBg: 'bg-[#F5E7F4]',               // 기존 분홍색 배경
-      behindNum: 'text-[#375A4E]',         // 기존 초록색
+      headerText: '', // 기본 검정
+      positionNum: 'text-[#375A4E]', // 기존 초록색
+      boxBg: 'bg-[#F5E7F4]', // 기존 분홍색 배경
+      behindNum: 'text-[#375A4E]', // 기존 초록색
     };
   };
 
@@ -92,7 +92,7 @@ export default function WaitingPage() {
   /* ************************************** */
 
   const retryOptions = {
-    retries: 10,
+    retries: 5,
     baseDelay: 3000,
     maxDelay: 20000,
   };
@@ -104,20 +104,27 @@ export default function WaitingPage() {
 
   // 2. action을 조회한 뒤 완료되면 입장요청
   useEffect(() => {
-    retryable(checkOrEnter, retryOptions).catch(console.error);
+    if (landingId == null) {
+      return;
+    }
+    // TODO retryable 나중에 landingId 바뀌면 문제될게 있을까??
+    retryable(checkOrEnter, retryOptions).catch((reason) =>
+      console.error(reason)
+    );
   }, [landingId]);
 
   const checkOrEnter = async () => {
-    if (landingId) {
-      console.log('call check-landing', landingId);
-    }
     const body = {
       landingId: landingId, // redirectUrl이 있으면 그걸로 목적지를 덮어씀
-      destinationUrl: redirectOverride ?? actionData.landingDestinationUrl,
     };
     const res = await ApiClient.post('/api/v1/queue/check-landing', body);
     if (res?.status === 200 && res?.data?.customerId != null) {
       const data = res.data;
+
+      if (data.destinationUrl == null) {
+        throw new Error('비정상적인 접근입니다 destinationUrl is null');
+      }
+
       setCustomerId(data.customerId);
       setWaitStatus(data.waitStatus);
       setDestinationUrl(data.destinationUrl);
@@ -227,6 +234,7 @@ export default function WaitingPage() {
     //입장 가능 상태인경우 토큰이랑 같이 보내줌
     if (waitStatus === 'READY') {
       let redirectTo = redirectOverride || destinationUrl;
+      console.log('redirectTo', redirectTo);
 
       if (redirectTo) {
         // 1. 혹시 모를 해시(#) 처리 (해시는 건드리지 않고 분리)
@@ -271,8 +279,10 @@ export default function WaitingPage() {
           </div>
           <section className="w-full flex flex-col items-center mt-5 mb-3">
             {/* 그린푸드 poc */}
-            <h1 className={`text-lg sm:text-xl md:text-2xl font-semibold text-center ${theme.headerText}`}>
-            {/* <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-center"> */}
+            <h1
+              className={`text-lg sm:text-xl md:text-2xl font-semibold text-center ${theme.headerText}`}
+            >
+              {/* <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-center"> */}
               사용자가 많아 접속 대기중이에요
             </h1>
           </section>
@@ -281,7 +291,7 @@ export default function WaitingPage() {
             position={currentPosition}
             isLoading={isLoading}
             progress={progress}
-            numColor={theme.positionNum} 
+            numColor={theme.positionNum}
           />
           <PositionPanelRenewal
             isLoading={isLoading}
