@@ -21,6 +21,7 @@ export async function retryable(
       }
     } catch (err) {
       lastErr = err;
+      console.log(err);
       if (attempt === retries) break;
 
       // 에러 기반 재시도 판정 훅
