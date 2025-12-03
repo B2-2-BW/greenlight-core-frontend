@@ -1,0 +1,40 @@
+/* LoadingSignal.css */
+.loading-signal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    height: 80px;
+    width: 30px;
+    justify-content: center;
+}
+
+.dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: blink 0.6s infinite;
+}
+
+/* 신호등 색상 */
+.dot-red {
+    background: #d74646;   /* 빨강 */
+    animation-delay: 0s;
+}
+
+.dot-orange {
+    background: #ffb347;   /* 주황 */
+    animation-delay: 0.2s;
+}
+
+.dot-green {
+    background: #10a14c;   /* 초록 */
+    animation-delay: 0.4s;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 0.3; }
+    40% { opacity: 1; }
+    60% { opacity: 0.3; }
+}

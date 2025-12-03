@@ -17,7 +17,7 @@ function Waiting({ queueEnterResp, setWaitStatus }) {
     eventSource.onmessage = (event) => {
       const parsed = JSON.parse(event.data);
       setSseResp(parsed);
-      console.log('[Greenlight] sse 응답결과', parsed); // 이게 실제 최신 데이터
+      // console.log('[Greenlight] sse 응답결과', parsed); // 이게 실제 최신 데이터
     };
 
     eventSource.onerror = (error) => {
@@ -71,9 +71,13 @@ function Waiting({ queueEnterResp, setWaitStatus }) {
       {/*</div>*/}
 
       <div className="w-full px-4 my-2">
-        {sseResp?.position == null
-          ? <div className="relative h-12"><Spinner /></div>
-          : <ProgressBar position={sseResp?.position} />}
+        {sseResp?.position == null ? (
+          <div className="relative h-12">
+            <Spinner />
+          </div>
+        ) : (
+          <ProgressBar position={sseResp?.position} />
+        )}
       </div>
 
       <PositionPanel
