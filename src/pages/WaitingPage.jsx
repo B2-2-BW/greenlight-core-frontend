@@ -207,7 +207,6 @@ export default function WaitingPage() {
         if (currentWaitStatus !== data.waitStatus) {
           setCurrentWaitStatus(data.waitStatus);
         }
-        console.log('[Greenlight] sse 응답결과', data); // 이게 실제 최신 데이터
       };
 
       es.onerror = (error) => {
@@ -241,10 +240,10 @@ export default function WaitingPage() {
         'gUserId',
         customerData?.customerId
       );
-      console.log(`[Redirect → ${currentWaitStatus}]`, finalDestination);
+      // console.log(`[Redirect → ${currentWaitStatus}]`, finalDestination);
       window.location.href = finalDestination;
     }
-  }, [customerData, redirectUrlParam]);
+  }, [currentWaitStatus, customerData, redirectUrlParam]);
 
   if (isNotFound) {
     return <NotFoundPage />;
