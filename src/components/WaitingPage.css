@@ -8,6 +8,7 @@
 .image {
     padding: 2px;
     height: 100%;
+    min-width: 40vh;
     transition: opacity 0.3s ease;
     border-radius: .25rem;
     object-fit: contain;

@@ -10,7 +10,7 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 500); // 0.7초 (0.5~1초 사이로 조절)
+    }, 500); // 0.5초 (0.5~1초 사이로 조절)
     return () => clearTimeout(timer);
   }, []);
 
