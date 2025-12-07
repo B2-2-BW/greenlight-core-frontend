@@ -39,6 +39,9 @@ export default function WaitingPage() {
 
   // [POC용] 액션 그룹 ID에 따라 이미지 경로 반환하는 함수
   const getImageUrl = () => {
+    if (customerData?.actionGroupId == null) {
+      return '';
+    }
     if (customerData?.actionGroupId === 6) {
       return '/resources/images/LI_sample.png';
     }
@@ -46,7 +49,7 @@ export default function WaitingPage() {
       return '/resources/images/GF_sample2.png';
     }
     // 기본 이미지
-    return '/resources/images/adSample.png';
+    return '/resources/images/mohan_sample.jpg';
   };
 
   // [POC용2] 액션 그룹 ID에 따른 스타일 반환 함수 추가
@@ -64,7 +67,7 @@ export default function WaitingPage() {
     return {
       headerText: '', // 기본 검정
       positionNum: 'text-[#375A4E]', // 기존 초록색
-      boxBg: 'bg-[#F5E7F4]', // 기존 분홍색 배경
+      boxBg: 'bg-[#f5f5f5]', // 기존 분홍색 배경
       behindNum: 'text-[#375A4E]', // 기존 초록색
     };
   };
@@ -123,6 +126,9 @@ export default function WaitingPage() {
     );
   }, [landingId, isNotFound]);
 
+  const onWaitingImageLoad = () => {
+    setIsImageLoading(false);
+  };
   const checkOrEnter = async () => {
     const body = {
       landingId: landingId, // redirectUrl이 있으면 그걸로 목적지를 덮어씀
@@ -138,7 +144,6 @@ export default function WaitingPage() {
 
         setCustomerData(data);
         setCurrentWaitStatus(data.waitStatus);
-        setIsImageLoading(false);
       } else {
         console.error('checkOrEnter 응답 비정상', {
           data: res?.data,
@@ -165,6 +170,7 @@ export default function WaitingPage() {
     if (customerData?.customerId == null) {
       return;
     }
+    setIsImageLoading(true);
 
     const cleanup = () => {
       if (eventRetryTimeoutRef.current !== null) {
@@ -241,7 +247,7 @@ export default function WaitingPage() {
         customerData?.customerId
       );
       // console.log(`[Redirect → ${currentWaitStatus}]`, finalDestination);
-      window.location.href = finalDestination;
+      window.location.replace(finalDestination);
     }
   }, [currentWaitStatus, customerData, redirectUrlParam]);
 
@@ -257,7 +263,12 @@ export default function WaitingPage() {
             {/* 광고 이미지 */}
             <div className="image-wrapper">
               {isImageLoading && <div className="image-skeleton" />}
-              <img src={getImageUrl()} alt="광고구좌 샘플" className="image" />
+              <img
+                src={getImageUrl()}
+                alt=""
+                className="image"
+                onLoad={onWaitingImageLoad}
+              />
             </div>
           </div>
           <section className="w-full flex flex-col items-center mt-5 mb-3">
