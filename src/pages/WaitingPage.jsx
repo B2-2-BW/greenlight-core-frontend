@@ -6,6 +6,7 @@ import { GREENLIGHT_CORE_API_URL } from '../config/config.js';
 import { retryable } from '../util/retry.js';
 import { useParams } from 'react-router-dom';
 import NotFoundPage from './NotFoundPage.jsx';
+import Upcoming from '../components/Upcoming.jsx';
 import '../components/WaitingPage.css';
 
 function overwriteQueryParam(originalUrl, key, value) {
@@ -27,6 +28,7 @@ export default function WaitingPage() {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
   const [isNotFound, setIsNotFound] = useState(false);
+  const [isUpcomingOpened, setIsUpcomingOpened] = useState(false);
 
   // 최초 진입 시 고객데이터
   const [customerData, setCustomerData] = useState(null);
@@ -160,8 +162,9 @@ export default function WaitingPage() {
     } catch (error) {
       console.log('res?.status', error?.status);
       if (error?.status === 404) {
-        setIsNotFound(true);
-        throw new Error('landingId not found');
+        setIsUpcomingOpened(true);
+        // setIsNotFound(true);
+        // throw new Error('landingId not found');
       } else {
         throw error;
       }
@@ -243,6 +246,15 @@ export default function WaitingPage() {
   // Step 4: 대기열 필요 없는 상태는 자동 이동
   useEffect(() => {
     const redirectTo = redirectUrlParam || customerData?.destinationUrl; // redirectUrl 쿼리가 있다면 우선 적용. 없을 경우 기본값 적용 (check-landing api 응답값)
+    
+    // 이벤트 입장 전 상태 -> Upcoming 화면 노출
+    // if(currentWaitStatus === 'DISABLED'){
+    if(currentWaitStatus === 'WAITING'){
+      console.log('변경>>>')
+      setIsUpcomingOpened(true);
+      return;
+    }
+
     if (redirectTo == null) {
       return;
     }
@@ -258,8 +270,11 @@ export default function WaitingPage() {
     }
   }, [currentWaitStatus, customerData, redirectUrlParam]);
 
-  if (isNotFound) {
-    return <NotFoundPage />;
+  // if (isNotFound) {
+  //   return <NotFoundPage />;
+  // }
+  if (isUpcomingOpened) {
+    return <Upcoming customerData={customerData}/>;
   }
 
   return (
