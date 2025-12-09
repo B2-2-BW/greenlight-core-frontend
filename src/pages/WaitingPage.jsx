@@ -121,6 +121,7 @@ export default function WaitingPage() {
   useEffect(() => {
     setIsNotFound(false);
     setIsImageLoading(true);
+    setIsUpcomingOpened(false);
   }, [landingId]);
 
   // 2. action을 조회한 뒤 완료되면 입장요청
@@ -143,6 +144,7 @@ export default function WaitingPage() {
     };
     try {
       const res = await ApiClient.post('/api/v1/queue/check-landing', body);
+      // TODO data.waitStatus 가 DISABLED 일 때 
       if (res?.status === 200 && res?.data?.customerId != null) {
         const data = res.data;
 
@@ -153,6 +155,11 @@ export default function WaitingPage() {
         setCustomerData(data);
         setCurrentWaitStatus(data.waitStatus);
         setIsImageLoading(false);
+      } else if (res?.status === 200 && res?.data?.customerId == null) {
+         const data = res.data;
+         setCustomerData(data);
+         setCurrentWaitStatus(data.waitStatus);
+         setIsImageLoading(false);
       } else {
         console.error('checkOrEnter 응답 비정상', {
           data: res?.data,
@@ -162,9 +169,8 @@ export default function WaitingPage() {
     } catch (error) {
       console.log('res?.status', error?.status);
       if (error?.status === 404) {
-        setIsUpcomingOpened(true);
-        // setIsNotFound(true);
-        // throw new Error('landingId not found');
+        setIsNotFound(true);
+        throw new Error('landingId not found');
       } else {
         throw error;
       }
@@ -248,11 +254,8 @@ export default function WaitingPage() {
     const redirectTo = redirectUrlParam || customerData?.destinationUrl; // redirectUrl 쿼리가 있다면 우선 적용. 없을 경우 기본값 적용 (check-landing api 응답값)
     
     // 이벤트 입장 전 상태 -> Upcoming 화면 노출
-    // if(currentWaitStatus === 'DISABLED'){
-    if(currentWaitStatus === 'WAITING'){
-      console.log('변경>>>')
+    if(currentWaitStatus === 'DISABLED'){
       setIsUpcomingOpened(true);
-      return;
     }
 
     if (redirectTo == null) {
@@ -265,16 +268,16 @@ export default function WaitingPage() {
         'gUserId',
         customerData?.customerId
       );
-      // console.log(`[Redirect → ${currentWaitStatus}]`, finalDestination);
+      console.log(`[Redirect → ${currentWaitStatus}]`, finalDestination);
       window.location.replace(finalDestination);
     }
   }, [currentWaitStatus, customerData, redirectUrlParam]);
 
-  // if (isNotFound) {
-  //   return <NotFoundPage />;
-  // }
+  if (isNotFound) {
+    return <NotFoundPage />;
+  }
   if (isUpcomingOpened) {
-    return <Upcoming customerData={customerData}/>;
+    return <Upcoming landingStartAt={customerData?.landingStartAt}/>;
   }
 
   return (
