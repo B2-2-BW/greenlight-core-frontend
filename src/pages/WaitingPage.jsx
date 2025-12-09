@@ -37,19 +37,25 @@ export default function WaitingPage() {
   const [positionData, setPositionData] = useState(null);
   const [progress, setProgress] = useState(0);
 
+  const mudoTempRansom = useRef(Math.random());
   // [POC용] 액션 그룹 ID에 따라 이미지 경로 반환하는 함수
   const getImageUrl = () => {
     if (customerData?.actionGroupId == null) {
       return '';
     }
-    if (customerData?.actionGroupId === 6) {
-      return '/resources/images/LI_sample.png';
+    // if (customerData?.actionGroupId === 6) {
+    //   return '/resources/images/LI_sample.png';
+    // }
+    // if (customerData?.actionGroupId === 7) {
+    //   return '/resources/images/GF_sample2.png';
+    // }
+    // 20251209 무한도전
+
+    if (mudoTempRansom.current > 0.5) {
+      return '/resources/images/251209_muhan_1.jpg';
+    } else {
+      return '/resources/images/251209_muhan_2.png';
     }
-    if (customerData?.actionGroupId === 7) {
-      return '/resources/images/GF_sample2.png';
-    }
-    // 기본 이미지
-    return '/resources/images/mohan_sample.jpg';
   };
 
   // [POC용2] 액션 그룹 ID에 따른 스타일 반환 함수 추가
@@ -144,6 +150,7 @@ export default function WaitingPage() {
 
         setCustomerData(data);
         setCurrentWaitStatus(data.waitStatus);
+        setIsImageLoading(false);
       } else {
         console.error('checkOrEnter 응답 비정상', {
           data: res?.data,
@@ -170,7 +177,7 @@ export default function WaitingPage() {
     if (customerData?.customerId == null) {
       return;
     }
-    setIsImageLoading(true);
+    // setIsImageLoading(true);
 
     const cleanup = () => {
       if (eventRetryTimeoutRef.current !== null) {
